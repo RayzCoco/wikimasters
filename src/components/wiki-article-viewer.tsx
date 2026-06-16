@@ -1,10 +1,20 @@
 "use client";
 
-import { Calendar, ChevronRight, Edit, Home, Trash, User } from "lucide-react";
+import {
+  Calendar,
+  ChevronRight,
+  Edit,
+  Eye,
+  Home,
+  Trash,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { deleteArticleForm } from "@/app/actions/articles";
+import { incrementPageview } from "@/app/actions/pageviews";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,7 +37,7 @@ export default function WikiArticleViewer({
   article,
   canEdit = false,
 }: WikiArticleViewerProps) {
-  // ...existing code...
+  const [localPageviews, setLocalPageviews] = useState(0);
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -38,6 +48,15 @@ export default function WikiArticleViewer({
       day: "numeric",
     });
   };
+
+  useEffect(() => {
+    async function fetchPageview() {
+      const newCount = await incrementPageview(article.id);
+      setLocalPageviews(newCount ?? null);
+    }
+
+    fetchPageview();
+  }, [article.id]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -72,6 +91,11 @@ export default function WikiArticleViewer({
               <span>{formatDate(article.createdAt)}</span>
             </div>
             <Badge variant="secondary">Article</Badge>
+            <div className="ml-3 flex items-center text-sm text-muted-foreground">
+              <Eye className="h-4 w-4 mr-1" />
+              <span>{localPageviews ? localPageviews : "-"}</span>
+              <span className="ml-1">views</span>
+            </div>
           </div>
         </div>
 

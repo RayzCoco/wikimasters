@@ -1,5 +1,5 @@
-import { HexclaveHandler } from "@hexclave/next";
+import { StackHandler } from "@stackframe/stack";
 
 export default function Handler() {
-  return <HexclaveHandler fullPage />;
+  return <StackHandler fullPage />;
 }

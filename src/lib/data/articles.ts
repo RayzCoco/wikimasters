@@ -1,8 +1,17 @@
 import { eq } from "drizzle-orm";
+import redis from "@/cache";
 import db from "@/db/index";
 import { articles, usersSync } from "@/db/schema";
 
 export async function getArticles() {
+  const cached = await redis.get("articles:all");
+  if (cached) {
+    console.log("get articles cache hit");
+    return cached;
+  }
+
+  console.log("Get articles cache miss");
+
   const response = await db
     .select({
       title: articles.title,
@@ -13,6 +22,10 @@ export async function getArticles() {
     })
     .from(articles)
     .leftJoin(usersSync, eq(articles.authorId, usersSync.id));
+
+  redis.set("articles:all", response, {
+    ex: 60,
+  });
   return response;
 }
 
@@ -24,6 +37,7 @@ export async function getArticleById(id: number) {
       createdAt: articles.createdAt,
       content: articles.content,
       author: usersSync.name,
+      imageUrl: articles.imageUrl,
     })
     .from(articles)
     .where(eq(articles.id, id))

@@ -2,11 +2,12 @@
 
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import db from "@/db";
+import redis from "@/cache";
 import { authorizeUserToEditArticle } from "@/db/authz";
+import db from "@/db/index";
 import { articles } from "@/db/schema";
 import { ensureUserExists } from "@/db/sync-user";
-import { hexclaveServerApp } from "@/stack/server";
+import { stackServerApp } from "@/stack/server";
 
 // Server actions for articles (stubs)
 // TODO: Replace with real database operations when ready
@@ -25,7 +26,7 @@ export type UpdateArticleInput = {
 };
 
 export async function createArticle(data: CreateArticleInput) {
-  const user = await hexclaveServerApp.getUser();
+  const user = await stackServerApp.getUser();
   if (!user) {
     throw new Error("❌ Unauthorized");
   }
@@ -37,13 +38,16 @@ export async function createArticle(data: CreateArticleInput) {
     slug: `${Date.now()}`,
     published: true,
     authorId: user.id,
+    imageUrl: data.imageUrl || undefined,
   });
+
+  redis.del("articles:all");
 
   return { success: true, message: "Article create logged (stub)" };
 }
 
 export async function updateArticle(id: string, data: UpdateArticleInput) {
-  const user = await hexclaveServerApp.getUser();
+  const user = await stackServerApp.getUser();
   if (!user) {
     throw new Error("❌ Unauthorized");
   }
@@ -60,6 +64,7 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
     .set({
       title: data.title,
       content: data.content,
+      imageUrl: data.imageUrl ?? undefined,
     })
     .where(eq(articles.id, +id));
 
@@ -67,7 +72,7 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
 }
 
 export async function deleteArticle(id: string) {
-  const user = await hexclaveServerApp.getUser();
+  const user = await stackServerApp.getUser();
   if (!user) {
     throw new Error("❌ Unauthorized");
   }

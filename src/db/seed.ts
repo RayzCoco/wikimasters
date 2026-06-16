@@ -15,19 +15,14 @@ async function main() {
     await sql.query("TRUNCATE TABLE articles RESTART IDENTITY CASCADE;");
 
     console.log("🔎 Querying existing users...");
-    let users = await db
+    const users = await db
       .select({ id: usersSync.id })
       .from(usersSync)
       .orderBy(usersSync.id);
 
     if (users.length === 0) {
       console.log("👤 No users found, inserting default seed user...");
-      await db.insert(usersSync).values({
-        id: "seed-user-001",
-        name: "Seed User",
-        email: "seed@example.com",
-      });
-      users = [{ id: "seed-user-001" }];
+      return;
     }
 
     const ids = users.map((user) => user.id);
