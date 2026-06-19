@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NavBar } from "@/components/ui/nav-bar";
@@ -37,6 +38,7 @@ export default function RootLayout({
             <NavBar />
             {children}
             <Analytics />
+            <SpeedInsights />
           </StackTheme>
         </StackProvider>
       </body>
